@@ -2,24 +2,52 @@
         <el-aside>
           <div class="button-wrapper">
            <!-- 회원가입 버튼 -->
-           <el-button class="login-btn" @click="goRouter()">로그인</el-button>
+           <el-button v-if="!session.id" class="login-btn" @click="goRouter('/login')">로그인</el-button>
+           <el-button v-else class="login-btn" @click="logout()">로그아웃</el-button>
            <!-- 로그인 버튼 -->
 
          </div>
-         <div class="user-info">로그인을 해주세요.</div>
+
+         <div class="user-info" v-if="!session.id"> 로그인을 해주세요.</div>
+         <div class="user-info" v-else>{{session.name}}님 환영합니다.</div>
          <div class="item">
-           사이드메뉴
+           <el-button @click="goRouter('/product-list')">상품목록</el-button>
          </div>
         </el-aside>
 </template>
-
+<script src="https://developers.kakao.com/sdk/js/kakao.min.js"/>
 <script>
-
+import { mapState, mapMutations, mapActions } from 'vuex'
 export default {
-  methods: {
-    goRouter () {
-      this.$router.push('/login')
+  data () {
+    return {
+      loginUser: sessionStorage.getItem('loginUser'),
+      name: ''
     }
+  },
+  methods: {
+    ...mapMutations(['setSession']),
+    ...mapActions(['loadSession', 'destroySession']),
+    goRouter (url) {
+      this.$router.push(url)
+    },
+    logout () {
+      if (confirm('로그아웃 하시겠습니까?')) {
+        this.destroySession()
+        Kakao.Auth.logout(function(res) {
+          console.log(res + "logout");
+        })
+        this.$router.push('/')
+      }
+    }
+  },
+  computed: {
+    ...mapState({
+      session: (state) => state.user.session
+    })
+  },
+  created () {
+    this.loadSession()
   }
 }
 </script>
