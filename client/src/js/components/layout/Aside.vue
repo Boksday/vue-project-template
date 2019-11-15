@@ -12,6 +12,8 @@
          <div class="user-info" v-else>{{session.name}}님 환영합니다.</div>
          <div class="item">
            <el-button @click="goRouter('/product-list')">상품목록</el-button>
+           <el-button @click="goRouter('/board')">게시판</el-button>
+           <el-button v-if="roleCheck" @click="managerPage">관리자페이지</el-button>
          </div>
         </el-aside>
 </template>
@@ -27,7 +29,7 @@ export default {
   },
   methods: {
     ...mapMutations(['setSession']),
-    ...mapActions(['loadSession', 'destroySession']),
+    ...mapActions(['loadSession', 'destroySession','getAllHistory']),
     goRouter (url) {
       this.$router.push(url)
     },
@@ -39,12 +41,19 @@ export default {
         })
         this.$router.push('/')
       }
+    },
+    managerPage() {
+      this.getAllHistory()
+      this.$router.push('/manager')
     }
   },
   computed: {
     ...mapState({
       session: (state) => state.user.session
-    })
+    }),
+    roleCheck() {
+      return this.session.role==='manager'
+    }
   },
   created () {
     this.loadSession()
